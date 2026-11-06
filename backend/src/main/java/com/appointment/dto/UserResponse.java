@@ -19,6 +19,8 @@ public class UserResponse {
     private String fullName;
     private String email;
     private String phoneNumber;
+    private String description;
+    private String specialization;
     private Role role;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
@@ -33,6 +35,8 @@ public class UserResponse {
                 .fullName(user.getFullName())
                 .email(user.getEmail())
                 .phoneNumber(user.getPhoneNumber())
+                .description(user.getDescription())
+                .specialization(user.getSpecialization())
                 .role(user.getRole())
                 .createdAt(user.getCreatedAt())
                 .updatedAt(user.getUpdatedAt())

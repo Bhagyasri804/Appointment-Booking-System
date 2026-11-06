@@ -179,4 +179,104 @@ export const cancelAppointment = async (id, reason) => {
   return response.data
 }
 
+// ==========================================
+// Service Provider Dashboard APIs
+// ==========================================
+
+// 1. Overview & Statistics
+export const getProviderOverview = async () => {
+  const response = await apiClient.get('/api/provider/overview')
+  return response.data
+}
+
+// 2. Profile Management
+export const getProviderProfile = async () => {
+  const response = await apiClient.get('/api/provider/profile')
+  return response.data
+}
+
+export const updateProviderProfile = async (profileData) => {
+  const response = await apiClient.put('/api/provider/profile', profileData)
+  return response.data
+}
+
+// 3. Availability Management
+export const getProviderAvailabilities = async () => {
+  const response = await apiClient.get('/api/provider/availability')
+  return response.data
+}
+
+export const createProviderAvailability = async (availabilityData) => {
+  const response = await apiClient.post('/api/provider/availability', availabilityData)
+  return response.data
+}
+
+export const updateProviderAvailability = async (id, availabilityData) => {
+  const response = await apiClient.put(`/api/provider/availability/${id}`, availabilityData)
+  return response.data
+}
+
+export const deleteProviderAvailability = async (id) => {
+  const response = await apiClient.delete(`/api/provider/availability/${id}`)
+  return response.data
+}
+
+// 4. Appointment Management
+export const getProviderAppointments = async (params = {}) => {
+  const response = await apiClient.get('/api/provider/appointments', { params })
+  return response.data
+}
+
+export const getProviderAppointmentById = async (id) => {
+  const response = await apiClient.get(`/api/provider/appointments/${id}`)
+  return response.data
+}
+
+export const confirmProviderAppointment = async (id) => {
+  const response = await apiClient.put(`/api/provider/appointments/${id}/confirm`)
+  return response.data
+}
+
+export const rejectProviderAppointment = async (id, reason) => {
+  const response = await apiClient.put(`/api/provider/appointments/${id}/reject`, { reason })
+  return response.data
+}
+
+export const completeProviderAppointment = async (id) => {
+  const response = await apiClient.put(`/api/provider/appointments/${id}/complete`)
+  return response.data
+}
+
+// 5. Calendar & Time Slots
+export const getProviderCalendarDay = async (date) => {
+  const response = await apiClient.get('/api/provider/calendar/day', { params: { date } })
+  return response.data
+}
+
+export const getProviderCalendarAppointments = async (params = {}) => {
+  const response = await apiClient.get('/api/provider/calendar/appointments', { params })
+  return response.data
+}
+
+// 6. Notifications
+export const getProviderNotifications = async () => {
+  const response = await apiClient.get('/api/provider/notifications')
+  return response.data
+}
+
+export const getProviderUnreadCount = async () => {
+  const response = await apiClient.get('/api/provider/notifications/unread-count')
+  return response.data
+}
+
+export const markNotificationRead = async (id) => {
+  const response = await apiClient.put(`/api/provider/notifications/${id}/read`)
+  return response.data
+}
+
+export const markAllNotificationsRead = async () => {
+  const response = await apiClient.put('/api/provider/notifications/read-all')
+  return response.data
+}
+
 export default apiClient

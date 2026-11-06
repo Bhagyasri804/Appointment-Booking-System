@@ -1,152 +1,211 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import { useAuth } from '../context/AuthContext'
-import { getAdminDashboard, getAdminUsers } from '../services/api'
+import { getAdminStats, getAdminReports } from '../services/api'
+import AdminOverviewView from './admin/AdminOverviewView'
+import AdminUsersView from './admin/AdminUsersView'
+import AdminServicesView from './admin/AdminServicesView'
+import AdminAppointmentsView from './admin/AdminAppointmentsView'
+import AdminReportsView from './admin/AdminReportsView'
 
 export const AdminDashboard = () => {
-  const { user } = useAuth()
-  const [dashboardData, setDashboardData] = useState(null)
-  const [users, setUsers] = useState([])
+  const { user, logout } = useAuth()
+  const [activeTab, setActiveTab] = useState('overview')
+  const [sidebarOpen, setSidebarOpen] = useState(false)
+
+  const [stats, setStats] = useState(null)
+  const [reports, setReports] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
 
-  useEffect(() => {
-    const fetchAdminData = async () => {
-      try {
-        const [dashRes, usersRes] = await Promise.all([
-          getAdminDashboard(),
-          getAdminUsers(),
-        ])
-        setDashboardData(dashRes.data)
-        setUsers(usersRes.data || [])
-      } catch (err) {
-        setError(err.response?.data?.message || 'Failed to load administrator data')
-      } finally {
-        setLoading(false)
-      }
+  const fetchOverviewData = useCallback(async () => {
+    setLoading(true)
+    try {
+      const [statsRes, reportsRes] = await Promise.all([
+        getAdminStats(),
+        getAdminReports(),
+      ])
+      setStats(statsRes.data)
+      setReports(reportsRes.data)
+    } catch (err) {
+      setError(err.response?.data?.message || 'Failed to load administrator telemetry')
+    } finally {
+      setLoading(false)
     }
-
-    fetchAdminData()
   }, [])
 
+  useEffect(() => {
+    fetchOverviewData()
+  }, [fetchOverviewData])
+
+  const renderActiveView = () => {
+    switch (activeTab) {
+      case 'overview':
+        return (
+          <AdminOverviewView
+            stats={stats}
+            reports={reports}
+            loading={loading}
+            onTabChange={(tab) => setActiveTab(tab)}
+          />
+        )
+      case 'users':
+        return <AdminUsersView />
+      case 'services':
+        return <AdminServicesView />
+      case 'appointments':
+        return <AdminAppointmentsView />
+      case 'reports':
+        return <AdminReportsView />
+      default:
+        return (
+          <AdminOverviewView
+            stats={stats}
+            reports={reports}
+            loading={loading}
+            onTabChange={(tab) => setActiveTab(tab)}
+          />
+        )
+    }
+  }
+
   return (
-    <div className="dashboard-container">
-      <div className="dashboard-header">
-        <div>
-          <span className="role-badge role-badge-admin">Admin Command Center</span>
-          <h1 className="dashboard-title">System Administration</h1>
-          <p className="dashboard-subtitle">Monitor users, roles, system health, and overall security</p>
+    <div className="admin-shell-layout">
+      {/* Sidebar Navigation */}
+      <aside className={`admin-sidebar ${sidebarOpen ? 'sidebar-open' : ''}`}>
+        <div className="sidebar-brand-box">
+          <div className="sidebar-logo-icon">AB</div>
+          <div>
+            <div className="sidebar-title">Appointment Admin</div>
+            <div className="sidebar-subtitle">Command Console</div>
+          </div>
         </div>
+
+        <nav className="sidebar-nav">
+          <button
+            className={`sidebar-nav-item ${activeTab === 'overview' ? 'active' : ''}`}
+            onClick={() => {
+              setActiveTab('overview')
+              setSidebarOpen(false)
+            }}
+          >
+            <span className="sidebar-icon">📊</span>
+            <span>Dashboard Overview</span>
+          </button>
+
+          <button
+            className={`sidebar-nav-item ${activeTab === 'users' ? 'active' : ''}`}
+            onClick={() => {
+              setActiveTab('users')
+              setSidebarOpen(false)
+            }}
+          >
+            <span className="sidebar-icon">👥</span>
+            <span>User Management</span>
+          </button>
+
+          <button
+            className={`sidebar-nav-item ${activeTab === 'services' ? 'active' : ''}`}
+            onClick={() => {
+              setActiveTab('services')
+              setSidebarOpen(false)
+            }}
+          >
+            <span className="sidebar-icon">🛠️</span>
+            <span>Service Catalog</span>
+          </button>
+
+          <button
+            className={`sidebar-nav-item ${activeTab === 'appointments' ? 'active' : ''}`}
+            onClick={() => {
+              setActiveTab('appointments')
+              setSidebarOpen(false)
+            }}
+          >
+            <span className="sidebar-icon">📅</span>
+            <span>Appointments</span>
+          </button>
+
+          <button
+            className={`sidebar-nav-item ${activeTab === 'reports' ? 'active' : ''}`}
+            onClick={() => {
+              setActiveTab('reports')
+              setSidebarOpen(false)
+            }}
+          >
+            <span className="sidebar-icon">📈</span>
+            <span>Reports &amp; Analytics</span>
+          </button>
+        </nav>
+
+        {/* Sidebar Footer User Info */}
+        <div className="sidebar-footer">
+          <div className="sidebar-admin-info">
+            <span className="admin-avatar">👑</span>
+            <div className="admin-text">
+              <div className="admin-name">{user?.fullName || 'Administrator'}</div>
+              <div className="admin-email">{user?.email}</div>
+            </div>
+          </div>
+          <button className="sidebar-logout-btn" onClick={logout} title="Log Out">
+            🚪 Logout
+          </button>
+        </div>
+      </aside>
+
+      {/* Main Admin Content Area */}
+      <div className="admin-main-wrap">
+        {/* Top Navbar */}
+        <header className="admin-topbar">
+          <div className="topbar-left">
+            <button
+              className="btn-mobile-sidebar-toggle"
+              onClick={() => setSidebarOpen((prev) => !prev)}
+              aria-label="Toggle Navigation Sidebar"
+            >
+              ☰
+            </button>
+            <div className="topbar-breadcrumbs">
+              <span>Admin Console</span>
+              <span className="bc-sep">&rsaquo;</span>
+              <strong className="bc-current">
+                {activeTab === 'overview' && 'Dashboard Overview'}
+                {activeTab === 'users' && 'User Management'}
+                {activeTab === 'services' && 'Service Catalog Management'}
+                {activeTab === 'appointments' && 'Appointment Management'}
+                {activeTab === 'reports' && 'Reports & Analytics'}
+              </strong>
+            </div>
+          </div>
+
+          <div className="topbar-right">
+            <span className="role-badge role-badge-admin">ADMINISTRATOR</span>
+            <button
+              className="btn-refresh-stats"
+              onClick={fetchOverviewData}
+              title="Refresh Telemetry"
+              disabled={loading}
+            >
+              🔄 Refresh
+            </button>
+          </div>
+        </header>
+
+        {error && (
+          <div className="alert alert-error" style={{ margin: '1rem 1.5rem 0' }}>
+            <span>⚠️</span>
+            <span>{error}</span>
+          </div>
+        )}
+
+        {/* Dynamic Subview */}
+        <main className="admin-content-canvas">
+          {renderActiveView()}
+        </main>
       </div>
 
-      {error && (
-        <div className="alert alert-error">
-          <span className="alert-icon">⚠️</span>
-          <span>{error}</span>
-        </div>
-      )}
-
-      {loading ? (
-        <div className="loading-card">
-          <div className="spinner"></div>
-          <p>Loading administration data...</p>
-        </div>
-      ) : (
-        <div className="dashboard-grid">
-          {/* Admin Stats Card */}
-          <div className="dash-card">
-            <h3 className="dash-card-title">⚙️ Admin Profile</h3>
-            <div className="dash-info-list">
-              <div className="dash-info-item">
-                <span className="dash-info-label">Admin Name</span>
-                <span className="dash-info-val">{user?.fullName}</span>
-              </div>
-              <div className="dash-info-item">
-                <span className="dash-info-label">Admin Email</span>
-                <span className="dash-info-val">{user?.email}</span>
-              </div>
-              <div className="dash-info-item">
-                <span className="dash-info-label">Role</span>
-                <span className="role-badge role-badge-admin">{user?.role}</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Quick Metrics */}
-          <div className="dash-card">
-            <h3 className="dash-card-title">📊 Platform Overview</h3>
-            <div className="stats-row">
-              <div className="stat-box">
-                <div className="stat-number">{users.length}</div>
-                <div className="stat-label">Total Users</div>
-              </div>
-              <div className="stat-box">
-                <div className="stat-number">
-                  {users.filter((u) => u.role === 'CUSTOMER').length}
-                </div>
-                <div className="stat-label">Customers</div>
-              </div>
-              <div className="stat-box">
-                <div className="stat-number">
-                  {users.filter((u) => u.role === 'SERVICE_PROVIDER').length}
-                </div>
-                <div className="stat-label">Providers</div>
-              </div>
-            </div>
-          </div>
-
-          {/* User Management Table */}
-          <div className="dash-card dash-card-full">
-            <div className="table-header-row">
-              <h3 className="dash-card-title">👥 Registered Users Management</h3>
-              <span className="table-badge">{users.length} accounts in database</span>
-            </div>
-
-            <div className="table-responsive">
-              <table className="users-table">
-                <thead>
-                  <tr>
-                    <th>ID</th>
-                    <th>Full Name</th>
-                    <th>Email</th>
-                    <th>Phone</th>
-                    <th>Role</th>
-                    <th>Status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {users.map((u) => (
-                    <tr key={u.id}>
-                      <td>#{u.id}</td>
-                      <td>
-                        <strong>{u.fullName}</strong>
-                      </td>
-                      <td>{u.email}</td>
-                      <td>{u.phoneNumber || '—'}</td>
-                      <td>
-                        <span
-                          className={`role-badge ${
-                            u.role === 'ADMIN'
-                              ? 'role-badge-admin'
-                              : u.role === 'SERVICE_PROVIDER'
-                              ? 'role-badge-provider'
-                              : 'role-badge-customer'
-                          }`}
-                        >
-                          {u.role}
-                        </span>
-                      </td>
-                      <td>
-                        <span className={`status-pill ${u.enabled ? 'status-pill-active' : 'status-pill-inactive'}`}>
-                          {u.enabled ? 'Active' : 'Disabled'}
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
+      {/* Mobile backdrop */}
+      {sidebarOpen && (
+        <div className="sidebar-mobile-backdrop" onClick={() => setSidebarOpen(false)}></div>
       )}
     </div>
   )

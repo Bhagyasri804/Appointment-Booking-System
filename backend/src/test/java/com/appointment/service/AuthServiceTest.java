@@ -19,6 +19,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.repository.query.FluentQuery;
@@ -284,6 +285,26 @@ class AuthServiceTest {
         @Override
         public List<User> findByRole(Role role) {
             return byId.values().stream().filter(u -> u.getRole() == role).toList();
+        }
+
+        @Override
+        public long countByRole(Role role) {
+            return byId.values().stream().filter(u -> u.getRole() == role).count();
+        }
+
+        @Override
+        public long countByEnabled(boolean enabled) {
+            return byId.values().stream().filter(u -> u.isEnabled() == enabled).count();
+        }
+
+        @Override
+        public Page<User> findFiltered(String search, Role role, Boolean enabled, Pageable pageable) {
+            List<User> list = byId.values().stream()
+                    .filter(u -> role == null || u.getRole() == role)
+                    .filter(u -> enabled == null || u.isEnabled() == enabled)
+                    .filter(u -> search == null || u.getFullName().toLowerCase().contains(search.toLowerCase()) || u.getEmail().toLowerCase().contains(search.toLowerCase()))
+                    .toList();
+            return new PageImpl<>(list, pageable, list.size());
         }
 
         @Override

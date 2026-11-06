@@ -81,7 +81,7 @@ export const getCurrentUser = async () => {
   return response.data
 }
 
-// Role-Protected APIs
+// Role-Protected Portals
 export const getCustomerDashboard = async () => {
   const response = await apiClient.get('/api/customer/dashboard')
   return response.data
@@ -92,13 +92,90 @@ export const getProviderDashboard = async () => {
   return response.data
 }
 
-export const getAdminDashboard = async () => {
-  const response = await apiClient.get('/api/admin/dashboard')
+// Admin Dashboard & Overview APIs
+export const getAdminStats = async () => {
+  const response = await apiClient.get('/api/admin/dashboard/stats')
   return response.data
 }
 
-export const getAdminUsers = async () => {
-  const response = await apiClient.get('/api/admin/users')
+export const getAdminReports = async () => {
+  const response = await apiClient.get('/api/admin/reports')
+  return response.data
+}
+
+// Admin User Management APIs
+export const getAdminUsersPaged = async (params = {}) => {
+  const response = await apiClient.get('/api/admin/users', { params })
+  return response.data
+}
+
+export const getAdminUserById = async (id) => {
+  const response = await apiClient.get(`/api/admin/users/${id}`)
+  return response.data
+}
+
+export const updateUserStatus = async (id, enabled) => {
+  const response = await apiClient.put(`/api/admin/users/${id}/status`, { enabled })
+  return response.data
+}
+
+// Admin Service Management APIs
+export const getAdminServices = async (params = {}) => {
+  const response = await apiClient.get('/api/admin/services', { params })
+  return response.data
+}
+
+export const getAdminServiceById = async (id) => {
+  const response = await apiClient.get(`/api/admin/services/${id}`)
+  return response.data
+}
+
+export const createService = async (serviceData) => {
+  const response = await apiClient.post('/api/admin/services', serviceData)
+  return response.data
+}
+
+export const updateService = async (id, serviceData) => {
+  const response = await apiClient.put(`/api/admin/services/${id}`, serviceData)
+  return response.data
+}
+
+export const deleteService = async (id) => {
+  const response = await apiClient.delete(`/api/admin/services/${id}`)
+  return response.data
+}
+
+export const toggleServiceStatus = async (id, active) => {
+  const response = await apiClient.put(`/api/admin/services/${id}/status`, null, {
+    params: { active },
+  })
+  return response.data
+}
+
+// Admin Service Categories APIs
+export const getAdminCategories = async () => {
+  const response = await apiClient.get('/api/admin/categories')
+  return response.data
+}
+
+export const createCategory = async (categoryData) => {
+  const response = await apiClient.post('/api/admin/categories', categoryData)
+  return response.data
+}
+
+// Admin Appointment Management APIs
+export const getAdminAppointments = async (params = {}) => {
+  const response = await apiClient.get('/api/admin/appointments', { params })
+  return response.data
+}
+
+export const getAdminAppointmentById = async (id) => {
+  const response = await apiClient.get(`/api/admin/appointments/${id}`)
+  return response.data
+}
+
+export const cancelAppointment = async (id, reason) => {
+  const response = await apiClient.put(`/api/admin/appointments/${id}/cancel`, { reason })
   return response.data
 }
 

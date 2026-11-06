@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import org.springframework.data.domain.Page;
 
 import java.util.List;
+import java.util.function.Function;
 
 @Data
 @Builder
@@ -32,7 +33,7 @@ public class PageResponse<T> {
                 .build();
     }
 
-    public static <E, D> PageResponse<D> of(Page<E> page, java.util.function.Function<E, D> mapper) {
+    public static <E, D> PageResponse<D> of(Page<E> page, Function<E, D> mapper) {
         List<D> mappedContent = page.getContent().stream().map(mapper).toList();
         return PageResponse.<D>builder()
                 .content(mappedContent)
@@ -42,5 +43,9 @@ public class PageResponse<T> {
                 .totalPages(page.getTotalPages())
                 .last(page.isLast())
                 .build();
+    }
+
+    public static <E, D> PageResponse<D> fromPage(Page<E> page, Function<E, D> mapper) {
+        return of(page, mapper);
     }
 }

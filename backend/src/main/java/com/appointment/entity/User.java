@@ -45,6 +45,12 @@ public class User {
     @Column(length = 30)
     private String phoneNumber;
 
+    @Column(length = 1000)
+    private String description;
+
+    @Column(length = 100)
+    private String specialization;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 30)
     private Role role;

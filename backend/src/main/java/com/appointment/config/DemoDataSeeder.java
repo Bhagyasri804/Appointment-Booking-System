@@ -2,11 +2,15 @@ package com.appointment.config;
 
 import com.appointment.entity.Appointment;
 import com.appointment.entity.AppointmentStatus;
+import com.appointment.entity.Notification;
+import com.appointment.entity.ProviderAvailability;
 import com.appointment.entity.Role;
 import com.appointment.entity.ServiceCategory;
 import com.appointment.entity.ServiceEntity;
 import com.appointment.entity.User;
 import com.appointment.repository.AppointmentRepository;
+import com.appointment.repository.NotificationRepository;
+import com.appointment.repository.ProviderAvailabilityRepository;
 import com.appointment.repository.ServiceCategoryRepository;
 import com.appointment.repository.ServiceEntityRepository;
 import com.appointment.repository.UserRepository;
@@ -18,7 +22,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
+import java.time.DayOfWeek;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 
 @Slf4j
 @Component
@@ -30,12 +36,15 @@ public class DemoDataSeeder implements CommandLineRunner {
     private final ServiceCategoryRepository serviceCategoryRepository;
     private final ServiceEntityRepository serviceEntityRepository;
     private final AppointmentRepository appointmentRepository;
+    private final ProviderAvailabilityRepository providerAvailabilityRepository;
+    private final NotificationRepository notificationRepository;
     private final PasswordEncoder passwordEncoder;
 
     @Override
     public void run(String... args) {
         seedCategoriesAndServices();
         seedDemoUsersAndAppointments();
+        seedProviderAvailabilityAndNotifications();
     }
 
     private void seedCategoriesAndServices() {
@@ -133,9 +142,27 @@ public class DemoDataSeeder implements CommandLineRunner {
                     .email("provider@appointment.com")
                     .password(passwordEncoder.encode("Provider@123"))
                     .phoneNumber("5551234567")
+                    .specialization("Cardiology & Internal Medicine")
+                    .description("Board-certified physician with over 12 years of clinical experience in preventive care and patient consultations.")
                     .role(Role.SERVICE_PROVIDER)
                     .enabled(true)
                     .build());
+        } else {
+            // Ensure specialization and description are set if previously null
+            userRepository.findByEmail("provider@appointment.com").ifPresent(provider -> {
+                boolean changed = false;
+                if (provider.getSpecialization() == null) {
+                    provider.setSpecialization("Cardiology & Internal Medicine");
+                    changed = true;
+                }
+                if (provider.getDescription() == null) {
+                    provider.setDescription("Board-certified physician with over 12 years of clinical experience in preventive care and patient consultations.");
+                    changed = true;
+                }
+                if (changed) {
+                    userRepository.save(provider);
+                }
+            });
         }
 
         if (appointmentRepository.count() == 0) {
@@ -193,6 +220,48 @@ public class DemoDataSeeder implements CommandLineRunner {
                         .build());
 
                 log.info("Demonstration appointments seeded successfully!");
+            }
+        }
+    }
+
+    private void seedProviderAvailabilityAndNotifications() {
+        User provider = userRepository.findByEmail("provider@appointment.com").orElse(null);
+        if (provider != null) {
+            // Seed Monday - Friday 09:00 - 17:00 (Break 13:00 - 14:00) if not present
+            if (!providerAvailabilityRepository.existsByProviderId(provider.getId())) {
+                log.info("Seeding default weekly availability for provider: {}", provider.getEmail());
+                DayOfWeek[] days = {DayOfWeek.MONDAY, DayOfWeek.TUESDAY, DayOfWeek.WEDNESDAY, DayOfWeek.THURSDAY, DayOfWeek.FRIDAY};
+                for (DayOfWeek day : days) {
+                    providerAvailabilityRepository.save(ProviderAvailability.builder()
+                            .provider(provider)
+                            .dayOfWeek(day)
+                            .startTime(LocalTime.of(9, 0))
+                            .endTime(LocalTime.of(17, 0))
+                            .breakStartTime(LocalTime.of(13, 0))
+                            .breakEndTime(LocalTime.of(14, 0))
+                            .active(true)
+                            .build());
+                }
+            }
+
+            // Seed demo notifications if empty
+            if (notificationRepository.findByUserIdOrderByCreatedAtDesc(provider.getId()).isEmpty()) {
+                log.info("Seeding initial notifications for provider: {}", provider.getEmail());
+                notificationRepository.save(Notification.builder()
+                        .user(provider)
+                        .title("New Appointment Request")
+                        .message("Alice Customer requested a Cardiology Consultation on " + LocalDateTime.now().plusDays(4).toLocalDate())
+                        .type("APPOINTMENT_REQUEST")
+                        .read(false)
+                        .build());
+
+                notificationRepository.save(Notification.builder()
+                        .user(provider)
+                        .title("Schedule Reminder")
+                        .message("Your working schedule is active for Monday through Friday from 09:00 to 17:00.")
+                        .type("INFO")
+                        .read(true)
+                        .build());
             }
         }
     }

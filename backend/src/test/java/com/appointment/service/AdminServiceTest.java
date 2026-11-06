@@ -245,6 +245,13 @@ class AdminServiceTest {
         @Override public List<Appointment> findByStatus(String status) { return data.values().stream().filter(a -> a.getStatus().equalsIgnoreCase(status)).toList(); }
         @Override public List<Appointment> findByCustomerId(Long customerId) { return null; }
         @Override public List<Appointment> findByServiceProviderId(Long serviceProviderId) { return null; }
+        @Override public long countByServiceProviderId(Long serviceProviderId) { return 0; }
+        @Override public long countByServiceProviderIdAndStatus(Long serviceProviderId, String status) { return 0; }
+        @Override public Page<Appointment> findProviderFiltered(Long providerId, String search, String status, LocalDateTime startDate, LocalDateTime endDate, Pageable pageable) { return null; }
+        @Override public long countTodayAppointments(Long providerId, LocalDateTime startOfDay, LocalDateTime endOfDay) { return 0; }
+        @Override public BigDecimal calculateTotalEarnings(Long providerId) { return BigDecimal.ZERO; }
+        @Override public BigDecimal calculateMonthlyEarnings(Long providerId, LocalDateTime startOfMonth, LocalDateTime endOfMonth) { return BigDecimal.ZERO; }
+        @Override public List<Appointment> findByServiceProviderIdAndAppointmentTimeBetween(Long serviceProviderId, LocalDateTime start, LocalDateTime end) { return new ArrayList<>(); }
         @Override public Page<Appointment> findFiltered(String search, String status, LocalDateTime startDate, LocalDateTime endDate, Pageable pageable) { return new PageImpl<>(new ArrayList<>(data.values()), pageable, data.size()); }
         @Override public List<Object[]> countAppointmentsByStatusGroup() { return new ArrayList<>(); }
         @Override public List<Object[]> findServicePopularity() { return new ArrayList<>(); }
@@ -363,3 +370,4 @@ class AdminServiceTest {
         @Override public Page<ServiceCategory> findAll(Pageable pageable) { return null; }
     }
 }
+

@@ -1,150 +1,79 @@
-import React, { useState, useEffect, useCallback } from 'react'
-import { checkBackendHealth } from './services/api'
+import React, { useState } from 'react'
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { AuthProvider } from './context/AuthContext'
+import Navbar from './components/Navbar'
+import ProtectedRoute from './components/ProtectedRoute'
+import Home from './pages/Home'
+import LoginPage from './pages/LoginPage'
+import RegisterPage from './pages/RegisterPage'
+import CustomerDashboard from './pages/CustomerDashboard'
+import ProviderDashboard from './pages/ProviderDashboard'
+import AdminDashboard from './pages/AdminDashboard'
+import UnauthorizedPage from './pages/UnauthorizedPage'
 import './App.css'
 
-function App() {
-  const [healthData, setHealthData] = useState(null)
-  const [loading, setLoading] = useState(true)
-  const [lastChecked, setLastChecked] = useState(null)
-
-  const fetchHealth = useCallback(async () => {
-    setLoading(true)
-    const result = await checkBackendHealth()
-    setHealthData(result)
-    setLastChecked(new Date().toLocaleTimeString())
-    setLoading(false)
-  }, [])
-
-  useEffect(() => {
-    fetchHealth()
-  }, [fetchHealth])
-
-  const isConnected = healthData?.success && healthData?.data?.status === 'UP'
-  const dbConnected = healthData?.data?.database?.status === 'CONNECTED'
+function AppContent() {
+  const [backendHealthy, setBackendHealthy] = useState(true)
 
   return (
     <div className="app-container">
-      {/* Top Navbar */}
-      <header className="app-header">
-        <div className="logo-area">
-          <div className="logo-icon">AB</div>
-          <span className="logo-text">Appointment Booking System</span>
-        </div>
-        <div>
-          {loading ? (
-            <span className="badge badge-loading">
-              <span className="pulse-dot"></span> Checking backend...
-            </span>
-          ) : isConnected ? (
-            <span className="badge badge-connected">
-              <span className="pulse-dot"></span> Backend Connected
-            </span>
-          ) : (
-            <span className="badge badge-disconnected">
-              <span className="pulse-dot"></span> Backend Offline
-            </span>
-          )}
-        </div>
-      </header>
-
-      {/* Main Content Area */}
+      <Navbar backendHealthy={backendHealthy} />
       <main className="main-content">
-        {/* Hero Section */}
-        <section className="hero-section">
-          <h1 className="hero-title">Welcome to Appointment Booking System</h1>
-          <p className="hero-subtitle">
-            A full-stack modern appointment management solution powered by Java Spring Boot, React.js, and MySQL.
-          </p>
-        </section>
+        <Routes>
+          {/* Public Routes */}
+          <Route path="/" element={<Home onHealthUpdate={setBackendHealthy} />} />
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/register" element={<RegisterPage />} />
+          <Route path="/unauthorized" element={<UnauthorizedPage />} />
 
-        {/* Backend & Database Connection Status Card */}
-        <section className="status-card">
-          <div className="status-header">
-            <h2>System Health &amp; Diagnostics</h2>
-            <button
-              className="refresh-button"
-              onClick={fetchHealth}
-              disabled={loading}
-            >
-              {loading ? 'Checking...' : 'Refresh Status'}
-            </button>
-          </div>
+          {/* Protected Customer Routes */}
+          <Route
+            path="/customer/dashboard"
+            element={
+              <ProtectedRoute allowedRoles={['CUSTOMER']}>
+                <CustomerDashboard />
+              </ProtectedRoute>
+            }
+          />
 
-          <div className="status-grid">
-            <div className="status-item">
-              <div className="status-label">Backend API Status</div>
-              <div className="status-value">
-                {loading
-                  ? 'Verifying...'
-                  : isConnected
-                  ? `${healthData.data.status} (200 OK)`
-                  : 'Offline / Unreachable'}
-              </div>
-            </div>
+          {/* Protected Provider Routes */}
+          <Route
+            path="/provider/dashboard"
+            element={
+              <ProtectedRoute allowedRoles={['SERVICE_PROVIDER']}>
+                <ProviderDashboard />
+              </ProtectedRoute>
+            }
+          />
 
-            <div className="status-item">
-              <div className="status-label">Service Name</div>
-              <div className="status-value">
-                {healthData?.data?.service || 'appointment-booking-backend'}
-              </div>
-            </div>
+          {/* Protected Admin Routes */}
+          <Route
+            path="/admin/dashboard"
+            element={
+              <ProtectedRoute allowedRoles={['ADMIN']}>
+                <AdminDashboard />
+              </ProtectedRoute>
+            }
+          />
 
-            <div className="status-item">
-              <div className="status-label">MySQL Database Status</div>
-              <div className="status-value">
-                {loading
-                  ? 'Checking...'
-                  : isConnected
-                  ? (dbConnected ? 'CONNECTED (appointment_db)' : 'DISCONNECTED')
-                  : 'Waiting for backend'}
-              </div>
-            </div>
-
-            <div className="status-item">
-              <div className="status-label">Last Checked</div>
-              <div className="status-value">
-                {lastChecked || 'Never'}
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* Platform Overview Features */}
-        <section className="features-section">
-          <h3>Upcoming Capabilities</h3>
-          <div className="features-grid">
-            <div className="feature-card">
-              <div className="feature-icon">📅</div>
-              <h4 className="feature-title">Smart Scheduling</h4>
-              <p className="feature-desc">
-                Seamlessly browse available slots and schedule appointments with automated conflict avoidance.
-              </p>
-            </div>
-
-            <div className="feature-card">
-              <div className="feature-icon">⚡</div>
-              <h4 className="feature-title">Real-Time Availability</h4>
-              <p className="feature-desc">
-                Instant synchronization across time zones ensuring provider and client schedules align perfectly.
-              </p>
-            </div>
-
-            <div className="feature-card">
-              <div className="feature-icon">🔔</div>
-              <h4 className="feature-title">Automated Reminders</h4>
-              <p className="feature-desc">
-                Email and SMS notifications to minimize missed appointments and keep bookings on track.
-              </p>
-            </div>
-          </div>
-        </section>
+          {/* Fallback */}
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
       </main>
-
-      {/* Footer */}
       <footer className="app-footer">
-        Appointment Booking System &copy; {new Date().getFullYear()} &bull; Initial Project Setup Verified
+        Appointment Booking System &copy; {new Date().getFullYear()} &bull; Feature 2: Authentication &amp; RBAC Active
       </footer>
     </div>
+  )
+}
+
+function App() {
+  return (
+    <BrowserRouter>
+      <AuthProvider>
+        <AppContent />
+      </AuthProvider>
+    </BrowserRouter>
   )
 }
 

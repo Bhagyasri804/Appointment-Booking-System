@@ -21,6 +21,55 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
 
     List<Appointment> findByCustomerId(Long customerId);
 
+    long countByCustomerId(Long customerId);
+
+    long countByCustomerIdAndStatus(Long customerId, String status);
+
+    @Query("SELECT COUNT(a) FROM Appointment a WHERE a.customer.id = :customerId AND a.appointmentTime >= :now AND UPPER(a.status) != 'CANCELLED'")
+    long countUpcomingAppointments(@Param("customerId") Long customerId, @Param("now") LocalDateTime now);
+
+    List<Appointment> findTop5ByCustomerIdOrderByAppointmentTimeDesc(Long customerId);
+
+    List<Appointment> findByCustomerIdAndAppointmentTimeBetween(
+            Long customerId,
+            LocalDateTime start,
+            LocalDateTime end
+    );
+
+    @Query("SELECT a FROM Appointment a WHERE a.customer.id = :customerId AND " +
+           "(:search IS NULL OR LOWER(a.title) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
+           "(a.serviceProvider IS NOT NULL AND (LOWER(a.serviceProvider.fullName) LIKE LOWER(CONCAT('%', :search, '%')) OR LOWER(a.serviceProvider.email) LIKE LOWER(CONCAT('%', :search, '%')))) OR " +
+           "(a.service IS NOT NULL AND LOWER(a.service.name) LIKE LOWER(CONCAT('%', :search, '%')))) AND " +
+           "(:status IS NULL OR UPPER(a.status) = UPPER(:status)) AND " +
+           "(:startDate IS NULL OR a.appointmentTime >= :startDate) AND " +
+           "(:endDate IS NULL OR a.appointmentTime <= :endDate)")
+    Page<Appointment> findCustomerFiltered(
+            @Param("customerId") Long customerId,
+            @Param("search") String search,
+            @Param("status") String status,
+            @Param("startDate") LocalDateTime startDate,
+            @Param("endDate") LocalDateTime endDate,
+            Pageable pageable
+    );
+
+    @Query("SELECT a FROM Appointment a WHERE a.customer.id = :customerId AND " +
+           "(UPPER(a.status) IN ('COMPLETED', 'CANCELLED') OR a.appointmentTime < :now) AND " +
+           "(:search IS NULL OR LOWER(a.title) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
+           "(a.serviceProvider IS NOT NULL AND (LOWER(a.serviceProvider.fullName) LIKE LOWER(CONCAT('%', :search, '%')) OR LOWER(a.serviceProvider.email) LIKE LOWER(CONCAT('%', :search, '%')))) OR " +
+           "(a.service IS NOT NULL AND LOWER(a.service.name) LIKE LOWER(CONCAT('%', :search, '%')))) AND " +
+           "(:status IS NULL OR UPPER(a.status) = UPPER(:status)) AND " +
+           "(:startDate IS NULL OR a.appointmentTime >= :startDate) AND " +
+           "(:endDate IS NULL OR a.appointmentTime <= :endDate)")
+    Page<Appointment> findCustomerHistory(
+            @Param("customerId") Long customerId,
+            @Param("now") LocalDateTime now,
+            @Param("search") String search,
+            @Param("status") String status,
+            @Param("startDate") LocalDateTime startDate,
+            @Param("endDate") LocalDateTime endDate,
+            Pageable pageable
+    );
+
     List<Appointment> findByServiceProviderId(Long serviceProviderId);
 
     long countByServiceProviderId(Long serviceProviderId);

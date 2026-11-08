@@ -200,6 +200,8 @@ class AdminServiceTest {
         @Override public boolean existsByEmail(String email) { return findByEmail(email).isPresent(); }
         @Override public boolean existsByRole(Role role) { return data.values().stream().anyMatch(u -> u.getRole() == role); }
         @Override public List<User> findByRole(Role role) { return data.values().stream().filter(u -> u.getRole() == role).toList(); }
+        @Override public List<User> findByRoleAndEnabledTrue(Role role) { return data.values().stream().filter(u -> u.getRole() == role && u.isEnabled()).toList(); }
+        @Override public List<User> searchProviders(String search) { return data.values().stream().filter(u -> u.getRole() == Role.SERVICE_PROVIDER && u.isEnabled()).toList(); }
         @Override public Page<User> findFiltered(String search, Role role, Boolean enabled, Pageable pageable) { return new PageImpl<>(new ArrayList<>(data.values()), pageable, data.size()); }
         @Override public boolean existsById(Long aLong) { return data.containsKey(aLong); }
         @Override public <S extends User> List<S> saveAll(Iterable<S> entities) { return null; }
@@ -244,6 +246,13 @@ class AdminServiceTest {
         @Override public List<Appointment> findAll() { return new ArrayList<>(data.values()); }
         @Override public List<Appointment> findByStatus(String status) { return data.values().stream().filter(a -> a.getStatus().equalsIgnoreCase(status)).toList(); }
         @Override public List<Appointment> findByCustomerId(Long customerId) { return null; }
+        @Override public long countByCustomerId(Long customerId) { return 0; }
+        @Override public long countByCustomerIdAndStatus(Long customerId, String status) { return 0; }
+        @Override public long countUpcomingAppointments(Long customerId, LocalDateTime now) { return 0; }
+        @Override public List<Appointment> findTop5ByCustomerIdOrderByAppointmentTimeDesc(Long customerId) { return List.of(); }
+        @Override public List<Appointment> findByCustomerIdAndAppointmentTimeBetween(Long customerId, LocalDateTime start, LocalDateTime end) { return List.of(); }
+        @Override public Page<Appointment> findCustomerFiltered(Long customerId, String search, String status, LocalDateTime startDate, LocalDateTime endDate, Pageable pageable) { return null; }
+        @Override public Page<Appointment> findCustomerHistory(Long customerId, LocalDateTime now, String search, String status, LocalDateTime startDate, LocalDateTime endDate, Pageable pageable) { return null; }
         @Override public List<Appointment> findByServiceProviderId(Long serviceProviderId) { return null; }
         @Override public long countByServiceProviderId(Long serviceProviderId) { return 0; }
         @Override public long countByServiceProviderIdAndStatus(Long serviceProviderId, String status) { return 0; }
@@ -297,6 +306,7 @@ class AdminServiceTest {
         @Override public long countByActiveTrue() { return data.values().stream().filter(ServiceEntity::isActive).count(); }
         @Override public List<ServiceEntity> findByActiveTrue() { return data.values().stream().filter(ServiceEntity::isActive).toList(); }
         @Override public List<ServiceEntity> findByCategoryId(Long categoryId) { return null; }
+        @Override public List<ServiceEntity> findCustomerServices(String search, Long categoryId, Sort sort) { return List.of(); }
         @Override public boolean existsById(Long aLong) { return data.containsKey(aLong); }
         @Override public void deleteById(Long aLong) { data.remove(aLong); }
         @Override public Page<ServiceEntity> findFiltered(String search, Long categoryId, Boolean active, Pageable pageable) { return new PageImpl<>(new ArrayList<>(data.values()), pageable, data.size()); }

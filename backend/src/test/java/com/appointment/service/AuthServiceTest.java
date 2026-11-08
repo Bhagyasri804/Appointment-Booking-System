@@ -288,6 +288,16 @@ class AuthServiceTest {
         }
 
         @Override
+        public List<User> findByRoleAndEnabledTrue(Role role) {
+            return byId.values().stream().filter(u -> u.getRole() == role && u.isEnabled()).toList();
+        }
+
+        @Override
+        public List<User> searchProviders(String search) {
+            return byId.values().stream().filter(u -> u.getRole() == Role.SERVICE_PROVIDER && u.isEnabled()).toList();
+        }
+
+        @Override
         public long countByRole(Role role) {
             return byId.values().stream().filter(u -> u.getRole() == role).count();
         }

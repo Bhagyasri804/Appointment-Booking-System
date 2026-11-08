@@ -279,4 +279,110 @@ export const markAllNotificationsRead = async () => {
   return response.data
 }
 
+// ==========================================
+// Customer Dashboard APIs
+// ==========================================
+
+// 1. Services & Categories
+export const getCustomerServices = async (params = {}) => {
+  const response = await apiClient.get('/api/customer/services', { params })
+  return response.data
+}
+
+export const getCustomerServiceById = async (id) => {
+  const response = await apiClient.get(`/api/customer/services/${id}`)
+  return response.data
+}
+
+export const getCustomerCategories = async () => {
+  const response = await apiClient.get('/api/customer/categories')
+  return response.data
+}
+
+// 2. Providers & Availability
+export const getCustomerProviders = async (params = {}) => {
+  const response = await apiClient.get('/api/customer/providers', { params })
+  return response.data
+}
+
+export const getCustomerProviderById = async (id) => {
+  const response = await apiClient.get(`/api/customer/providers/${id}`)
+  return response.data
+}
+
+export const getCustomerProviderAvailability = async (id) => {
+  const response = await apiClient.get(`/api/customer/providers/${id}/availability`)
+  return response.data
+}
+
+export const getCustomerAvailableSlots = async (providerId, serviceId, date) => {
+  const response = await apiClient.get('/api/customer/available-slots', {
+    params: { providerId, serviceId, date },
+  })
+  return response.data
+}
+
+// 3. Appointment Booking & Management
+export const bookCustomerAppointment = async (bookingData) => {
+  const response = await apiClient.post('/api/customer/appointments', bookingData)
+  return response.data
+}
+
+export const getCustomerAppointments = async (params = {}) => {
+  const response = await apiClient.get('/api/customer/appointments', { params })
+  return response.data
+}
+
+export const getCustomerAppointmentById = async (id) => {
+  const response = await apiClient.get(`/api/customer/appointments/${id}`)
+  return response.data
+}
+
+export const cancelCustomerAppointment = async (id, reason) => {
+  const response = await apiClient.put(`/api/customer/appointments/${id}/cancel`, { reason })
+  return response.data
+}
+
+export const rescheduleCustomerAppointment = async (id, rescheduleData) => {
+  const response = await apiClient.put(`/api/customer/appointments/${id}/reschedule`, rescheduleData)
+  return response.data
+}
+
+export const getCustomerAppointmentHistory = async (params = {}) => {
+  const response = await apiClient.get('/api/customer/history', { params })
+  return response.data
+}
+
+// 4. Profile Management
+export const getCustomerProfile = async () => {
+  const response = await apiClient.get('/api/customer/profile')
+  return response.data
+}
+
+export const updateCustomerProfile = async (profileData) => {
+  const response = await apiClient.put('/api/customer/profile', profileData)
+  return response.data
+}
+
+// 5. Notifications
+export const getCustomerNotifications = async () => {
+  const response = await apiClient.get('/api/customer/notifications')
+  return response.data
+}
+
+export const getCustomerUnreadCount = async () => {
+  const response = await apiClient.get('/api/customer/notifications/unread-count')
+  return response.data
+}
+
+export const markCustomerNotificationRead = async (id) => {
+  const response = await apiClient.put(`/api/customer/notifications/${id}/read`)
+  return response.data
+}
+
+export const markAllCustomerNotificationsRead = async () => {
+  const response = await apiClient.put('/api/customer/notifications/read-all')
+  return response.data
+}
+
 export default apiClient

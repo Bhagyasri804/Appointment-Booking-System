@@ -23,6 +23,14 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     List<User> findByRole(Role role);
 
+    List<User> findByRoleAndEnabledTrue(Role role);
+
+    @Query("SELECT u FROM User u WHERE u.role = 'SERVICE_PROVIDER' AND u.enabled = true AND " +
+           "(:search IS NULL OR LOWER(u.fullName) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
+           "LOWER(u.specialization) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
+           "LOWER(u.description) LIKE LOWER(CONCAT('%', :search, '%')))")
+    List<User> searchProviders(@Param("search") String search);
+
     long countByRole(Role role);
 
     long countByEnabled(boolean enabled);

@@ -375,6 +375,8 @@ class ProviderServiceTest {
         @Override public long count() { return data.size(); }
         @Override public boolean existsByRole(Role role) { return data.values().stream().anyMatch(u -> u.getRole() == role); }
         @Override public List<User> findByRole(Role role) { return data.values().stream().filter(u -> u.getRole() == role).toList(); }
+        @Override public List<User> findByRoleAndEnabledTrue(Role role) { return data.values().stream().filter(u -> u.getRole() == role && u.isEnabled()).toList(); }
+        @Override public List<User> searchProviders(String search) { return data.values().stream().filter(u -> u.getRole() == Role.SERVICE_PROVIDER && u.isEnabled()).toList(); }
         @Override public long countByRole(Role role) { return data.values().stream().filter(u -> u.getRole() == role).count(); }
         @Override public long countByEnabled(boolean enabled) { return data.values().stream().filter(u -> u.isEnabled() == enabled).count(); }
         @Override public Page<User> findFiltered(String search, Role role, Boolean enabled, Pageable pageable) { return new PageImpl<>(new ArrayList<>(data.values())); }
@@ -422,6 +424,13 @@ class ProviderServiceTest {
         @Override public List<Appointment> findAll() { return new ArrayList<>(data.values()); }
         @Override public List<Appointment> findByStatus(String status) { return data.values().stream().filter(a -> a.getStatus().equalsIgnoreCase(status)).toList(); }
         @Override public List<Appointment> findByCustomerId(Long customerId) { return null; }
+        @Override public long countByCustomerId(Long customerId) { return 0; }
+        @Override public long countByCustomerIdAndStatus(Long customerId, String status) { return 0; }
+        @Override public long countUpcomingAppointments(Long customerId, LocalDateTime now) { return 0; }
+        @Override public List<Appointment> findTop5ByCustomerIdOrderByAppointmentTimeDesc(Long customerId) { return List.of(); }
+        @Override public List<Appointment> findByCustomerIdAndAppointmentTimeBetween(Long customerId, LocalDateTime start, LocalDateTime end) { return List.of(); }
+        @Override public Page<Appointment> findCustomerFiltered(Long customerId, String search, String status, LocalDateTime startDate, LocalDateTime endDate, Pageable pageable) { return null; }
+        @Override public Page<Appointment> findCustomerHistory(Long customerId, LocalDateTime now, String search, String status, LocalDateTime startDate, LocalDateTime endDate, Pageable pageable) { return null; }
         @Override public List<Appointment> findByServiceProviderId(Long serviceProviderId) {
             return data.values().stream().filter(a -> a.getServiceProvider() != null && a.getServiceProvider().getId().equals(serviceProviderId)).toList();
         }

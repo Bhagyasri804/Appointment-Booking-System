@@ -19,6 +19,15 @@ public interface ServiceEntityRepository extends JpaRepository<ServiceEntity, Lo
 
     long countByActiveTrue();
 
+    @Query("SELECT s FROM ServiceEntity s WHERE s.active = true AND " +
+           "(:search IS NULL OR LOWER(s.name) LIKE LOWER(CONCAT('%', :search, '%')) OR LOWER(s.description) LIKE LOWER(CONCAT('%', :search, '%'))) AND " +
+           "(:categoryId IS NULL OR s.category.id = :categoryId)")
+    List<ServiceEntity> findCustomerServices(
+            @Param("search") String search,
+            @Param("categoryId") Long categoryId,
+            org.springframework.data.domain.Sort sort
+    );
+
     @Query("SELECT s FROM ServiceEntity s WHERE " +
            "(:search IS NULL OR LOWER(s.name) LIKE LOWER(CONCAT('%', :search, '%')) OR LOWER(s.description) LIKE LOWER(CONCAT('%', :search, '%'))) AND " +
            "(:categoryId IS NULL OR s.category.id = :categoryId) AND " +

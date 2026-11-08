@@ -1418,6 +1418,7 @@
 }
 
 /* Appointment status badges */
+.badge-status-confirmed,
 .status-badge-confirmed {
   background-color: #dbeafe;
   color: #1e40af;
@@ -1427,6 +1428,7 @@
   font-weight: 700;
 }
 
+.badge-status-pending,
 .status-badge-pending {
   background-color: #fef3c7;
   color: #92400e;
@@ -1436,6 +1438,7 @@
   font-weight: 700;
 }
 
+.badge-status-completed,
 .status-badge-completed {
   background-color: #d1fae5;
   color: #065f46;
@@ -1445,6 +1448,7 @@
   font-weight: 700;
 }
 
+.badge-status-cancelled,
 .status-badge-cancelled {
   background-color: #fee2e2;
   color: #991b1b;
@@ -1454,6 +1458,8 @@
   font-weight: 700;
 }
 
+.badge-status-secondary,
+.badge-status-default,
 .status-badge-default {
   background-color: #f1f5f9;
   color: #475569;
